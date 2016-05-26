@@ -8,7 +8,7 @@
 
     public abstract class TemplateBase : ITemplate
     {
-        internal TextWriter CurrentWriter { get; set; }
+        public TextWriter CurrentWriter { get; private set; }
 
         /// <summary>Gets or sets the template service.</summary>
         public IInternalTemplateService InternalTemplateService { internal get; set; }
