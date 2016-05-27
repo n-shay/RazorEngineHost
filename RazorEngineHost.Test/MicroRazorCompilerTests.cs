@@ -39,6 +39,21 @@
         }
 
         [TestMethod]
+        public void HtmlRaw()
+        {
+            // The template
+            const string Templ = "<p>@Html.Raw(\"<p>\")</p>";
+            var expected = "<p><p></p>";
+
+            // Arrange
+            var service = RazorEngineHost.Create(c => c.WithBaseTemplateType(typeof(HtmlTemplateBase<>)));
+
+            // Act
+            this.CompileRunAndAssert(service, Templ, expected);
+        }
+
+
+        [TestMethod]
         public void LiteralAttribute()
         {
             // The template
