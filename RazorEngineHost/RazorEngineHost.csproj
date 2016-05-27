@@ -68,13 +68,18 @@
     <Compile Include="Compilation\ICompilerService.cs" />
     <Compile Include="PositionTagged.cs" />
     <Compile Include="RazorEngineCompilerError.cs" />
+    <Compile Include="Templating\CompilationResults.cs" />
     <Compile Include="Templating\CompiledTemplate.cs" />
     <Compile Include="Templating\DynamicData.cs" />
+    <Compile Include="Templating\DynamicTemplateData.cs" />
+    <Compile Include="Templating\HtmlHelper.cs" />
+    <Compile Include="Templating\HtmlTemplateBaseOfTModel.cs" />
     <Compile Include="Templating\ICompiledTemplate.cs" />
     <Compile Include="Templating\IInternalTemplateService.cs" />
     <Compile Include="Templating\InternalTemplateService.cs" />
     <Compile Include="Templating\IRazorEngineHost.cs" />
     <Compile Include="Templating\ITemplate.cs" />
+    <Compile Include="Templating\ITemplateDataContainer.cs" />
     <Compile Include="Templating\ITemplateOfTModel.cs" />
     <Compile Include="Templating\RazorEngineCore.cs" />
     <Compile Include="Templating\RazorEngineHost.cs" />
@@ -85,6 +90,7 @@
     <Compile Include="Templating\TemplateBaseOfTModel.cs" />
     <Compile Include="TemplateCompilationException.cs" />
     <Compile Include="TemplateLoadingException.cs" />
+    <Compile Include="Templating\TemplateContext.cs" />
     <Compile Include="Templating\TemplateWriter.cs" />
     <Compile Include="Text\HtmlEncodedString.cs" />
     <Compile Include="Text\HtmlEncodedStringFactory.cs" />

@@ -29,12 +29,12 @@
         public string Template { get; }
 
         /// <summary>
-        /// Initialises a new instance of <see cref="T:RazorEngine.Templating.TemplateCompilationException" />.
+        /// Initialises a new instance of <see cref="TemplateCompilationException" />.
         /// </summary>
         /// <param name="errors">The set of compiler errors.</param>
         /// <param name="files">The source code that wasn't compiled.</param>
         /// <param name="template">The source template that wasn't compiled.</param>
-        public TemplateCompilationException(IEnumerable<RazorEngineCompilerError> errors, CompilationData files, string template)
+        public TemplateCompilationException(IList<RazorEngineCompilerError> errors, CompilationData files, string template)
           : base(GetMessage(errors, files, template))
         {
             this.CompilerErrors = new ReadOnlyCollection<RazorEngineCompilerError>(errors.ToList());
@@ -43,7 +43,7 @@
         }
 
         /// <summary>
-        /// Initialises a new instance of <see cref="T:RazorEngine.Templating.TemplateCompilationException" /> from serialised data.
+        /// Initialises a new instance of <see cref="TemplateCompilationException" /> from serialised data.
         /// </summary>
         /// <param name="info">The serialisation info.</param>
         /// <param name="context">The streaming context.</param>
@@ -98,7 +98,6 @@
                 "  * If the problem is about missing/invalid references or multiple defines either try to load \n" +
                 "    the missing references manually (in the compiling appdomain!) or\n" +
                 "    Specify your references manually by providing your own IReferenceResolver implementation.\n" +
-                "    See https://antaris.github.io/RazorEngine/ReferenceResolver.html for details.\n" +
                 "    Currently all references have to be available as files!\n" +
                 "  * If you get 'class' does not contain a definition for 'member': \n" +
                 "        try another modelType (for example 'null' to make the model dynamic).\n" +

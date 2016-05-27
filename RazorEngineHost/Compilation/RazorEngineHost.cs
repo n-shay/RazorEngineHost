@@ -32,9 +32,9 @@
         //public virtual ParserBase DecorateCodeParser(ParserBase incomingCodeParser)
         //{
         //    if (incomingCodeParser is CSharpCodeParser)
-        //        return (ParserBase)new RazorEngine.Compilation.CSharp.CSharpCodeParser();
+        //        return (ParserBase)new RazorEngineHost.Compilation.CSharp.CSharpCodeParser();
         //    if (incomingCodeParser is System.Web.Razor.Parser.VBCodeParser)
-        //        return (ParserBase)new RazorEngine.Compilation.VisualBasic.VBCodeParser();
+        //        return (ParserBase)new RazorEngineHost.Compilation.VisualBasic.VBCodeParser();
         //    return base.DecorateCodeParser(incomingCodeParser);
         //}
     }

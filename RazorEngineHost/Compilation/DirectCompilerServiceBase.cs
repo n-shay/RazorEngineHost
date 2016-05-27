@@ -3,7 +3,6 @@
     using System;
     using System.CodeDom;
     using System.CodeDom.Compiler;
-    using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -63,19 +62,16 @@
                 .Where(a => !string.IsNullOrWhiteSpace(a))
                 .Distinct(StringComparer.InvariantCultureIgnoreCase)
                 .ToArray();
-            var flag1 = array.Any(a => a.Contains("mscorlib.dll"));
-            var compilerParameters = new CompilerParameters
+            var options = new CompilerParameters
                 {
                     GenerateInMemory = false,
                     GenerateExecutable = false,
                     IncludeDebugInformation = this.Debug,
-                    TreatWarningsAsErrors = false
+                    TreatWarningsAsErrors = false,
+                    TempFiles = new TempFileCollection(this.GetTemporaryDirectory(), true),
+                    CompilerOptions =
+                        $"/target:library /optimize /define:RAZORENGINE {(array.Any(a => a.Contains("mscorlib.dll")) ? "/nostdlib" : "")}"
                 };
-            var tempFileCollection = new TempFileCollection(this.GetTemporaryDirectory(), true);
-            compilerParameters.TempFiles = tempFileCollection;
-            compilerParameters.CompilerOptions =
-                $"/target:library /optimize /define:RAZORENGINE {(flag1 ? "/nostdlib" : "")}";
-            var options = compilerParameters;
             options.ReferencedAssemblies.AddRange(array);
             var fileName = Path.Combine(options.TempFiles.TempDir, $"{this.GetAssemblyName(context)}.dll");
             options.TempFiles.AddFile(fileName, true);
@@ -84,12 +80,12 @@
             if (this.Debug)
             {
                 var flag2 = false;
-                var str2 = Path.Combine(
+                var genTempPath = Path.Combine(
                     compilerResults.TempFiles.TempDir,
                     "generated_template." + this.SourceFileExtension);
-                if (!File.Exists(str2))
+                if (!File.Exists(genTempPath))
                 {
-                    File.WriteAllText(str2, codeCompileUnit);
+                    File.WriteAllText(genTempPath, codeCompileUnit);
                     flag2 = true;
                 }
                 if (!flag2)
@@ -98,7 +94,7 @@
                     {
                         if (tempFile.EndsWith("." + this.SourceFileExtension))
                         {
-                            File.Copy(tempFile, str2, true);
+                            File.Copy(tempFile, genTempPath, true);
                             break;
                         }
                     }
@@ -132,7 +128,7 @@
             //if (context.ModelType != null && CompilerServicesUtility.IsDynamicType(context.ModelType))
             //    codeType.CustomAttributes.Add(
             //        new CodeAttributeDeclaration(new CodeTypeReference(typeof (HasDynamicModelAttribute))));
-            GenerateConstructors(CompilerServicesUtility.GetConstructors(context.TemplateType), codeType);
+            GenerateConstructors(CompilerServicesUtility.GetConstructors(context.TemplateType).ToArray(), codeType);
             //this.Inspect(results.GeneratedCode);
             var sb = new StringBuilder();
             using (var stringWriter = new StringWriter(sb, CultureInfo.InvariantCulture))
@@ -151,7 +147,7 @@
         /// <param name="constructors">The set of constructors.</param>
         /// <param name="codeType">The code type declaration.</param>
         private static void GenerateConstructors(
-            IEnumerable<ConstructorInfo> constructors,
+            ConstructorInfo[] constructors,
             CodeTypeDeclaration codeType)
         {
             if (constructors == null || !constructors.Any())
@@ -193,7 +189,8 @@
                                     error.Line,
                                     error.Column,
                                     error.ErrorNumber,
-                                    error.IsWarning)),
+                                    error.IsWarning))
+                        .ToArray(),
                     files,
                     context.TemplateContent);
             var pathToAssembly = compilerResults.PathToAssembly;
@@ -209,7 +206,7 @@
                 }
                 catch (Exception ex)
                 {
-                    throw new TemplateLoadingException("Unable to load types of the laded assembly", ex);
+                    throw new TemplateLoadingException("Unable to load types of the loaded assembly", ex);
                 }
                 throw new TemplateLoadingException("We could not find the type in the compiled assembly!");
             }
@@ -241,9 +238,9 @@
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
             new PermissionSet(PermissionState.Unrestricted).Assert();
-            if (!(Type.GetType("Mono.Runtime") != null))
-                return this.CompileType_Windows(context);
-            return this.CompileTypeImpl(context);
+            return !(Type.GetType("Mono.Runtime") != null)
+                ? this.CompileType_Windows(context)
+                : this.CompileTypeImpl(context);
         }
 
         /// <summary>Releases managed resourced used by this instance.</summary>

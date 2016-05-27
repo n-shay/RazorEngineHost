@@ -14,7 +14,7 @@
         public IEnumerable<string> Namespaces { get; }
 
         /// <summary>
-        /// Initialises a new instance of <see cref="T:RazorEngine.Templating.RequireNamespacesAttribute" />.
+        /// Initialises a new instance of <see cref="RequireNamespacesAttribute" />.
         /// </summary>
         /// <param name="namespaces">The set of required namespace imports.</param>
         public RequireNamespacesAttribute(params string[] namespaces)

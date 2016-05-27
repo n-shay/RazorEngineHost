@@ -6,7 +6,7 @@
     using global::RazorEngineHost.Compilation;
 
     /// <summary>
-    /// A simple readonly implementation of <see cref="T:RazorEngine.Templating.ICompiledTemplate" />.
+    /// A simple readonly implementation of <see cref="ICompiledTemplate" />.
     /// </summary>
     internal class CompiledTemplate : ICompiledTemplate
     {

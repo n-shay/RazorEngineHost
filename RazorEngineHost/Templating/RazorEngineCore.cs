@@ -27,7 +27,11 @@
         {
             //ITemplateSource templateSource = this.Resolve(key);
             var templateType = this.CreateTemplateType(templateSource, modelType);
-            return new CompiledTemplate(templateType.Item2, templateSource, templateType.Item1, modelType);
+            return new CompiledTemplate(
+                templateType.Item2,
+                templateSource,
+                templateType.Item1,
+                modelType);
         }
 
         /// <summary>
@@ -35,12 +39,14 @@
         /// </summary>
         /// <param name="template">The compiled template.</param>
         /// <param name="model">The model instance or NULL if no model exists.</param>
+        /// <param name="configTemplateData"></param>
         /// <returns>An instance of <see cref="ITemplate" />.</returns>
-        internal virtual ITemplate CreateTemplate(ICompiledTemplate template, object model)
+        internal virtual ITemplate CreateTemplate(ICompiledTemplate template, object model, Action<dynamic> configTemplateData)
         {
             var instance = (ITemplate)Activator.CreateInstance(template.TemplateType);
             instance.InternalTemplateService = new InternalTemplateService(this);
             instance.SetModel(model);
+            configTemplateData?.Invoke(instance.TemplateData);
             return instance;
         }
 
@@ -54,11 +60,11 @@
         public virtual Tuple<Type, CompilationData> CreateTemplateType(string razorTemplate, Type modelType)
         {
             var typeContext = new TypeContext
-                {
-                    ModelType = modelType ?? typeof (DynamicObject),
-                    TemplateContent = razorTemplate,
-                    TemplateType = this.Configuration.BaseTemplateType ?? typeof (TemplateBase<>)
-                };
+            {
+                ModelType = modelType ?? typeof(DynamicObject),
+                TemplateContent = razorTemplate,
+                TemplateType = this.Configuration.BaseTemplateType ?? typeof(TemplateBase<>)
+            };
             foreach (var @namespace in this.Configuration.Namespaces)
                 typeContext.Namespaces.Add(@namespace);
             var compilerService = this.Configuration.CompilerServiceFactory.CreateCompilerService(this.Configuration.Language);
@@ -72,12 +78,13 @@
         /// <param name="template">The template to run.</param>
         /// <param name="writer"></param>
         /// <param name="model"></param>
+        /// <param name="configTemplateData"></param>
         /// <returns>The string result of the template.</returns>
-        public void RunTemplate(ICompiledTemplate template, TextWriter writer, object model)
+        public void RunTemplate(ICompiledTemplate template, TextWriter writer, object model, Action<dynamic> configTemplateData)
         {
             if (template == null)
                 throw new ArgumentNullException(nameof(template));
-            this.CreateTemplate(template, model).Run(writer);
+            this.CreateTemplate(template, model, configTemplateData).Run(writer);
         }
 
     }

@@ -1,30 +1,36 @@
 ﻿namespace RazorEngineHost.Compilation.ReferenceResolver
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
 
     /// <summary>
-    /// Resolves the assemblies by using all currently loaded assemblies. See <see cref="ReferenceResolver.IReferenceResolver" />
+    /// Resolves the assemblies by using all currently loaded assemblies. See <see cref="IReferenceResolver" />
     /// </summary>
     public class UseCurrentAssembliesReferenceResolver : IReferenceResolver
     {
         /// <summary>
-        /// See <see cref="M:RazorEngine.Compilation.ReferenceResolver.IReferenceResolver.GetReferences(RazorEngine.Compilation.TypeContext,System.Collections.Generic.IEnumerable{RazorEngine.Compilation.ReferenceResolver.CompilerReference})" />
+        /// See <see cref="IReferenceResolver.GetReferences(TypeContext,IEnumerable{CompilerReference})" />
         /// </summary>
         /// <param name="context"></param>
         /// <param name="includeAssemblies"></param>
         /// <returns></returns>
-        public IEnumerable<CompilerReference> GetReferences(TypeContext context = null, IEnumerable<CompilerReference> includeAssemblies = null)
+        public IEnumerable<CompilerReference> GetReferences(
+            TypeContext context = null,
+            IEnumerable<CompilerReference> includeAssemblies = null)
         {
-            return CompilerServicesUtility.GetLoadedAssemblies().Where<Assembly>((Func<Assembly, bool>)(a =>
-            {
-                if (!a.IsDynamic && File.Exists(a.Location))
-                    return !a.Location.Contains("CompiledRazorTemplates.Dynamic");
-                return false;
-            })).GroupBy<Assembly, string>((Func<Assembly, string>)(a => a.GetName().Name)).Select<IGrouping<string, Assembly>, Assembly>((Func<IGrouping<string, Assembly>, Assembly>)(grp => grp.First<Assembly>((Func<Assembly, bool>)(y => y.GetName().Version == grp.Max<Assembly, Version>((Func<Assembly, Version>)(x => x.GetName().Version)))))).Select<Assembly, CompilerReference>((Func<Assembly, CompilerReference>)(a => CompilerReference.From(a))).Concat<CompilerReference>(includeAssemblies ?? Enumerable.Empty<CompilerReference>());
+            return CompilerServicesUtility.GetLoadedAssemblies()
+                .Where(
+                    a =>
+                        {
+                            if (!a.IsDynamic && File.Exists(a.Location))
+                                return !a.Location.Contains("CompiledRazorTemplates.Dynamic");
+                            return false;
+                        })
+                .GroupBy(a => a.GetName().Name)
+                .Select(grp => grp.First(y => y.GetName().Version == grp.Max(x => x.GetName().Version)))
+                .Select(CompilerReference.From)
+                .Concat(includeAssemblies ?? Enumerable.Empty<CompilerReference>());
         }
     }
 }

@@ -12,7 +12,7 @@
         /// <summary>Compiles the specified template and caches it.</summary>
         /// <param name="templateSource">The template.</param>
         /// <param name="modelType">The model type.</param>
-        ICompiledTemplate Compile(string templateSource, Type modelType = null);
+        TemplateContext Compile(string templateSource, Type modelType = null);
 
         /// <summary>
         /// Runs the given cached template.
@@ -23,13 +23,25 @@
         /// <param name="writer"></param>
         /// <param name="modelType"></param>
         /// <param name="model"></param>
-        void RunCompile(string templateSource, TextWriter writer, Type modelType = null, object model = null);
+        /// <param name="configTemplateData"></param>
+        void RunCompile(
+            string templateSource,
+            TextWriter writer,
+            Type modelType = null,
+            object model = null,
+            Action<dynamic> configTemplateData = null);
 
         /// <summary>Runs the given cached template.</summary>
-        /// <param name="compiledTemplate"></param>
+        /// <param name="templateContext"></param>
         /// <param name="writer"></param>
         /// <param name="modelType"></param>
         /// <param name="model"></param>
-        void Run(ICompiledTemplate compiledTemplate, TextWriter writer, Type modelType = null, object model = null);
+        /// <param name="configTemplateData"></param>
+        void Run(
+            TemplateContext templateContext,
+            TextWriter writer,
+            Type modelType = null,
+            object model = null,
+            Action<dynamic> configTemplateData = null);
     }
 }

@@ -1,6 +1,7 @@
 ﻿namespace RazorEngineHost.Templating
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Text;
 
@@ -8,12 +9,18 @@
 
     public abstract class TemplateBase : ITemplate
     {
+        private DynamicTemplateData templateData;
+
         public TextWriter CurrentWriter { get; private set; }
 
         /// <summary>Gets or sets the template service.</summary>
         public IInternalTemplateService InternalTemplateService { internal get; set; }
 
         internal virtual Type ModelType => null;
+
+        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly",
+            Justification = "This is the mechanism by which the TemplateBase gets its TemplateDataDictionary object.")]
+        public dynamic TemplateData => this.templateData ?? (this.templateData = new DynamicTemplateData());
 
         public virtual void SetModel(object model)
         {
@@ -24,8 +31,17 @@
         {
         }
 
+        /// <summary>
+        /// A method responsible of initializing required helpers for running (executing) templates.
+        /// </summary>
+        public virtual void InitHelpers()
+        {
+        }
+
         public void Run(TextWriter writer)
         {
+            this.InitHelpers();
+
             var builder = new StringBuilder();
             using (var stringWriter = new StringWriter(builder))
             {
@@ -137,7 +153,7 @@
         }
 
         /// <summary>
-        /// Writes a <see cref="T:RazorEngine.PositionTagged`1" /> literal to the result.
+        /// Writes a <see cref="PositionTagged{String}" /> literal to the result.
         /// </summary>
         /// <param name="writer">The writer.</param>
         /// <param name="value">The literal to be written.</param>

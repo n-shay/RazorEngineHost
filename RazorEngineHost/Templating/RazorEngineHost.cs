@@ -3,13 +3,12 @@
     using System;
     using System.IO;
 
-    using global::RazorEngineHost.Compilation;
     using global::RazorEngineHost.Configuration;
 
     public class RazorEngineHost : IRazorEngineHost
     {
         private bool disposed;
-        
+
         /// <summary>The internal core instance.</summary>
         internal RazorEngineCore Core { get; }
 
@@ -17,7 +16,7 @@
         internal IEngineConfiguration Configuration { get; }
 
         /// <summary>
-        /// Initialises a new instance of <see cref="T:RazorEngine.Templating.TemplateService" />
+        /// Initialises a new instance of <see cref="RazorEngineHost" />
         /// </summary>
         /// <param name="config">The template service configuration.</param>
         internal RazorEngineHost(IEngineConfiguration config)
@@ -47,25 +46,48 @@
             return new RazorEngineHost(config);
         }
 
-        public ICompiledTemplate Compile(string templateSource, Type modelType = null)
+        public TemplateContext Compile(string templateSource, Type modelType = null)
         {
-            CheckModelType(modelType);
-            return this.Core.Compile(templateSource, modelType);
+            try
+            {
+                CheckModelType(modelType);
+                var compiledTemplate = this.Core.Compile(templateSource, modelType);
+                return new TemplateContext(compiledTemplate);
+            }
+            catch (ArgumentException ex)
+            {
+                return new TemplateContext(ex);
+            }
+            catch (TemplateLoadingException ex)
+            {
+                return new TemplateContext(ex);
+            }
+            catch (TemplateCompilationException ex)
+            {
+                return new TemplateContext(ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Unhandled compilation exception occured.", ex);
+            }
         }
 
-        public void RunCompile(string templateSource, TextWriter writer, Type modelType = null, object model = null)
+        public void RunCompile(string templateSource, TextWriter writer, Type modelType = null, object model = null, Action<dynamic> configTemplateData = null)
         {
-            CheckModelType(modelType);
-            var compiledTemplate = this.Compile(templateSource, modelType);
-            this.Run(compiledTemplate, writer, modelType, model);
+            var context = this.Compile(templateSource, modelType);
+            CheckTemplateContext(context);
+            this.Run(context, writer, modelType, model, configTemplateData);
         }
 
-        public void Run(ICompiledTemplate compiledTemplate, TextWriter writer, Type modelType = null, object model = null)
+        public void Run(TemplateContext templateContext, TextWriter writer, Type modelType = null, object model = null, Action<dynamic> configTemplateData = null)
         {
             CheckModelType(modelType);
-            if (compiledTemplate.ModelType != modelType)
-                throw new ArgumentException($"Compiled template model does not match the {nameof(modelType)} provided.", nameof(modelType));
-            this.Core.RunTemplate(compiledTemplate, writer, model);
+            CheckTemplateContext(templateContext);
+            if (templateContext.CompiledTemplate.ModelType != modelType)
+                throw new ArgumentException(
+                    $"Compiled template model does not match the {nameof(modelType)} provided.",
+                    nameof(modelType));
+            this.Core.RunTemplate(templateContext.CompiledTemplate, writer, model, configTemplateData);
         }
 
         /// <summary>
@@ -74,30 +96,21 @@
         /// <param name="modelType">the type to check</param>
         internal static void CheckModelType(Type modelType)
         {
-            if (!(modelType == null) && CompilerServicesUtility.IsAnonymousTypeRecursive(modelType))
-                throw new ArgumentException("We cannot support anonymous model types as those are internal! \nHowever you can just use 'dynamic' (modelType == null) and we try to make it work for you (at the cost of performance).");
+            // TODO: check if this validation still required.
+            if (!(modelType == null) && Compilation.CompilerServicesUtility.IsAnonymousTypeRecursive(modelType))
+                throw new ArgumentException(
+                    "We cannot support anonymous model types as those are internal! \nHowever you can just use 'dynamic' (modelType == null) and we try to make it work for you (at the cost of performance).");
         }
 
-        ///// <summary>
-        ///// Checks if we need to wrap the given model in
-        ///// an <see cref="T:RazorEngine.Compilation.RazorDynamicObject" /> instance and wraps it.
-        ///// </summary>
-        ///// <param name="modelType">the model-type</param>
-        ///// <param name="original">the original model</param>
-        ///// <param name="allowMissing">true when we should allow missing properties on dynamic models.</param>
-        ///// <returns>the original model or an wrapper object.</returns>
-        //internal static object GetDynamicModel(Type modelType, object original, bool allowMissing)
-        //{
-        //    object obj = original;
-        //    if (modelType == (Type)null && original != null)
-        //    {
-        //        if (CompilerServicesUtility.IsAnonymousTypeRecursive(original.GetType()))
-        //            obj = RazorDynamicObject.Create(original, allowMissing);
-        //        else if (allowMissing)
-        //            obj = RazorDynamicObject.Create(original, allowMissing);
-        //    }
-        //    return obj;
-        //}
+        /// <summary>
+        /// Checks if the given template-context has compiled successfully.
+        /// </summary>
+        /// <param name="context">The template context to check</param>
+        internal static void CheckTemplateContext(TemplateContext context)
+        {
+            if (!context.Results.Succeeded)
+                throw new ArgumentException("Provided template failed to compile.", nameof(context), context.Results.CompilationException);
+        }
 
         public void Dispose()
         {
@@ -109,7 +122,7 @@
         {
             if (this.disposed)
                 return;
-            
+
             // Do additional disposing here...
 
             this.disposed = true;

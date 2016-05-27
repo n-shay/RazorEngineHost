@@ -2,9 +2,9 @@
 {
     using System.IO;
 
-    public interface ITemplate
+    public interface ITemplate : ITemplateDataContainer
     {
-        /// <summary>Sets the internal template service.</summary>
+        /// <summary>Gets the internal template service.</summary>
         IInternalTemplateService InternalTemplateService { set; }
 
         /// <summary>Set the model of the template (if applicable).</summary>

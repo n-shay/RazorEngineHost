@@ -12,7 +12,7 @@
         /// <summary>
         /// Creates a <see cref="ICompilerService" /> that supports the specified language.
         /// </summary>
-        /// <param name="language">The <see cref="T:RazorEngine.Language" />.</param>
+        /// <param name="language">The <see cref="Language" />.</param>
         /// <returns>An instance of <see cref="ICompilerService" />.</returns>
         [SecuritySafeCritical]
         public ICompilerService CreateCompilerService(Language language)
