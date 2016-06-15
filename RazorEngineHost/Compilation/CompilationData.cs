@@ -20,7 +20,7 @@
         /// <summary>
         /// returns the temporary folder for the compilation process (can be null).
         /// </summary>
-        internal string TmpFolder { get; }
+        public string TmpFolder { get; }
 
         /// <summary>Creates a new CompilationData instance.</summary>
         /// <param name="sourceCode">The generated source code for the template.</param>

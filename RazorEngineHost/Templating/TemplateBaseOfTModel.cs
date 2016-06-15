@@ -11,7 +11,7 @@
         internal override Type ModelType => typeof (TModel);
 
         /// <summary>Gets or sets the model.</summary>
-        public TModel Model { get; private set; }
+        public dynamic Model { get; private set; }
 
         /// <summary>
         /// Initialises a new instance of <see cref="TemplateBase{TModel}" />.

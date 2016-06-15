@@ -143,7 +143,7 @@
             var expected = "Hello Shay";
 
             // Arrange
-            var model = new TestModel
+            var model = new TestModelA
                 {
                     Name = "Shay"
                 };
@@ -164,9 +164,35 @@
             var model = new TestParentModel
                 {
                     D = 1.234,
-                    Child = new TestModel
+                    Child = new TestModelA
                         {
                             Name = "Shay"
+                        }
+                };
+            var service = RazorEngineHost.Create(c => c.WithBaseTemplateType(typeof(TemplateBase<>)));
+
+            // Act
+            this.CompileRunAndAssert(service, Templ, expected, model, typeof(TestParentModel));
+        }
+
+        [TestMethod]
+        public void ModelWithInheritanceTemplate()
+        {
+            // The template
+            const string Templ = "Hello @Model.Child.Name (@Model.Child.Color.Name)";
+            var expected = "Hello Shay (Green)";
+
+            // Arrange
+            var model = new TestParentModel
+                {
+                    D = 1.234,
+                    Child = new TestModelA
+                        {
+                            Name = "Shay",
+                            Color = new TestColorModel
+                                {
+                                    Name = "Green"
+                                }
                         }
                 };
             var service = RazorEngineHost.Create(c => c.WithBaseTemplateType(typeof(TemplateBase<>)));
@@ -271,7 +297,22 @@
         }
     }
 
-    public class TestModel
+    public abstract class TestModel
+    {
+        public string Name { get; set; }
+    }
+
+    public class TestModelA : TestModel
+    {
+        public TestColorModel Color { get; set; }
+    }
+
+    public class TestModelB : TestModel
+    {
+        public DateTime DateOfBirth { get; set; }
+    }
+
+    public class TestColorModel
     {
         public string Name { get; set; }
     }

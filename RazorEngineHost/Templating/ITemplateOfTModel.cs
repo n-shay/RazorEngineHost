@@ -7,6 +7,6 @@
     public interface ITemplate<out TModel> : ITemplate
     {
         /// <summary>Gets the or sets the model.</summary>
-        TModel Model { get; }
+        dynamic Model { get; }
     }
 }
